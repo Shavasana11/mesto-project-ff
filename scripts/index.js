@@ -18,16 +18,16 @@ function addCard(cardTitle, cardImage, deletedCard) {
   cardImg.alt = cardTitle;
   cardImg.src = cardImage;
   const deleteButton = cardElement.querySelector(".card__delete-button");
-  deleteButton.addEventListener("click", function(evt) {
+
+  deleteButton.addEventListener("click", function (evt) {
     deletedCard(evt);
-});
+  });
 
   return cardElement;
 }
 
 // @todo: Функция удаления карточки
-
-const deletedCard = function (event, deletedCard) {
+const deletedCard = (event) => {
   const item = event.target.closest(".card");
   item.remove();
 };
