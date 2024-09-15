@@ -1,43 +1,100 @@
-import './index.css';
-import { initialCards } from './cards.js';
+import "./pages/index.css"; 
+import { initialCards } from "./components/cards.js"; 
+import { createCard, deleteCardCallback, likeCardCallback } from "./components/card.js";
+import { openModal, closeModal } from "./components/modal.js";
 
-// @todo: Темплейт карточки
 
-const cardTemplate = document.querySelector("#card-template").content;
+export const template = document.getElementById('card-template').content;
 
-// @todo: DOM узлы
 
-const content = document.querySelector(".content");
-const cardList = content.querySelector(".places__list");
-const addButton = content.querySelector(".profile__add-button");
 
-// @todo: Функция создания карточки
+const popups = document.querySelectorAll('.popup');
+const cardlist = document.querySelector('.places__list');
+const buttonEditProfile = document.querySelector('.profile__edit-button');
+const buttonAddProfile = document.querySelector('.profile__add-button');
+const popupTypeEdit = document.querySelector('.popup_type_edit');
+const popupTypeImage = document.querySelector('.popup_type_image');
+const nameInput = document.querySelector('.popup__input_type_name');
+const jobInput = document.querySelector('.popup__input_type_description');
+const popupNewCard = document.querySelector('.popup_type_new-card');
 
-function addCard(cardTitle, cardImage, deletedCard) {
-  const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
-  const cardImg = cardElement.querySelector(".card__image");
-  cardElement.querySelector(".card__title").textContent = cardTitle;
+initialCards.forEach((item) => {
+    const cardElement = createCard(item, deleteCardCallback, likeCardCallback, openModalImage);
+    cardlist.append(cardElement);
+});
 
-  cardImg.alt = cardTitle;
-  cardImg.src = cardImage;
-  const deleteButton = cardElement.querySelector(".card__delete-button");
+ 
 
-  deleteButton.addEventListener("click", function (evt) {
-    deletedCard(evt);
-  });
+buttonAddProfile.addEventListener('click', () => { openModal(popupNewCard) });
+buttonEditProfile.addEventListener('click', () => {
+    
+    nameInput.value = profileNameElement.textContent; 
+    jobInput.value = profileDescriptionElement.textContent; 
 
-  return cardElement;
+    openModal(popupTypeEdit) });
+
+
+function openModalImage(evt) { 
+    openModal (popupTypeImage); 
+    const imagePopup = document.querySelector('.popup__image'); 
+    const popupCaption = document.querySelector('.popup__caption'); 
+    imagePopup.src = evt.target.src; 
+    popupCaption.textContent = evt.target.alt; 
+  } 
+  
+popups.forEach((popup) => {
+    const closeButton = popup.querySelector(".popup__close")
+    closeButton.addEventListener("click", () => {
+        closeModal(popup);
+    });
+});
+
+popups.forEach((popup) => {
+    popup.addEventListener("mousedown", (evt) => {
+        if (evt.target.classList.contains("popup")) {
+            closeModal(popup);
+        }
+    });
+}); 
+
+const profileNameElement = document.querySelector('.profile__title');
+const profileDescriptionElement = document.querySelector('.profile__description');
+
+
+function handleProfileFormSubmit(evt) {
+    evt.preventDefault(); 
+    const nameValue = nameInput.value;
+    const jobValue = jobInput.value;
+    profileNameElement.textContent = nameValue;
+    profileDescriptionElement.textContent = jobValue;
+
+    closeModal(popupTypeEdit);
+}
+const formElementProf = document.querySelector('[name="edit-profile"]');
+formElementProf.addEventListener('submit', handleProfileFormSubmit);
+
+const formElementNew = document.querySelector('[name="new-place"]');
+const typeCardName = document.querySelector('.popup__input_type_card-name')
+const typeUrl = document.querySelector('.popup__input_type_url')
+
+function clearForm(form) {
+    form.reset();
 }
 
-// @todo: Функция удаления карточки
-const deletedCard = (event) => {
-  const item = event.target.closest(".card");
-  item.remove();
-};
+formElementNew.addEventListener('submit', (evt) => {
+    evt.preventDefault();
 
-// @todo: Вывести карточки на страницу
+    const CardNameValue = typeCardName.value;
+    const UrlValue = typeUrl.value;
 
-initialCards.forEach(function ({ name, link }) {
-  const cardData = addCard(name, link, deletedCard);
-  cardList.append(cardData);
-});
+    const newCard = {
+        name: CardNameValue,
+        link: UrlValue
+    };
+    const cardElementNew = createCard(newCard, deleteCardCallback, likeCardCallback, openModalImage);
+    cardlist.prepend(cardElementNew);
+
+    clearForm(formElementNew);
+  
+    closeModal(popupNewCard);
+})
