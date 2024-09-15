@@ -1,4 +1,4 @@
-import { template } from "../index.js";
+export const template = document.getElementById("card-template").content;
 
 export function deleteCardCallback(evt) {
   evt.target.closest(".places__item").remove();
