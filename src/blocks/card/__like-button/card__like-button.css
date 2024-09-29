@@ -1,8 +1,8 @@
 .card__like-button {
   width: 21px;
   height: 18px;
-  background: transparent url(/src/images/like-inactive.svg) no-repeat;
-  
+  background: transparent url('../../../images/like-inactive.svg') no-repeat;
+  /*Потом это будет из модификатора*/
   background-size: 21px 18px;
   border: none;
   cursor: pointer;

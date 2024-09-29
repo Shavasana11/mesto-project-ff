@@ -1,10 +1,12 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin'); 
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-  entry: { main: "./src/index.js" },
+  entry: {
+    main: "./src/index.js",
+  },
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "main.js",
@@ -14,7 +16,7 @@ module.exports = {
   devServer: {
     static: path.resolve(__dirname, "./dist"),
     compress: true,
-    port: 9061,
+    port: 8080,
     open: true,
   },
   module: {
@@ -25,8 +27,18 @@ module.exports = {
         exclude: "/node_modules/",
       },
       {
-        test: /\.(png|svg|jpg|gif|woff(2)?|eot|ttf|otf)$/,
+        test: /\.(png|svg|jpg|gif)$/,
         type: "asset/resource",
+        generator: {
+          filename: "images/[name].[hash][ext]",
+        },
+      },
+      {
+        test: /\.(woff(2)?|eot|ttf|otf)$/,
+        type: "asset/resource",
+        generator: {
+          filename: "fonts/[name].[hash][ext]",
+        },
       },
       {
         test: /\.css$/,
@@ -44,7 +56,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html",
-      filename: "index.html"
     }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin(),
