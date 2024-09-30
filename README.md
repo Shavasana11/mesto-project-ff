@@ -1,4 +1,4 @@
-https://github.com/Shavasana/mesto-project-ff
+https://shavasana11.github.io/mesto-project-ff/
 
 # Яндекс Практикум, проектная работа "Mesto"
 
@@ -13,12 +13,12 @@ https://github.com/Shavasana/mesto-project-ff
 
 ### Live
 
-https://github.com/Shavasana/mesto-project-ff
+https://shavasana11.github.io/mesto-project-ff/
 
 ### Запуск
 
 ```
-git pull https://github.com/Shavasana/mesto-project-ff
+git pull https://shavasana11.github.io/mesto-project-ff/
 cd mesto-project-ff
 npm i
 npm run dev
