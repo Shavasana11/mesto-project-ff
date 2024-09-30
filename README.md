@@ -1,4 +1,5 @@
 https://github.com/Shavasana/mesto-project-ff
+
 # Яндекс Практикум, проектная работа "Mesto"
 
 ## Оглавление
@@ -11,6 +12,7 @@ https://github.com/Shavasana/mesto-project-ff
 - [Благодарность](#благодарность)
 
 ### Live
+
 https://github.com/Shavasana/mesto-project-ff
 
 ### Запуск
