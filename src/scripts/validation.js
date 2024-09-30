@@ -1,20 +1,9 @@
-export const validationConfig = {
-  formSelector: ".popup__form",
-  inputSelector: ".popup__input",
-  submitButtonSelector: ".popup__button",
-  inactiveButtonClass: "popup__button_disabled",
-  inputErrorClass: "popup__input_type_error",
-  errorClass: "popup__error_visible",
-};
-
-export const enableValidation = (validationConfig) => {
+// functions
+const enableValidation = (validationConfig) => {
   const formList = Array.from(
     document.querySelectorAll(validationConfig.formSelector),
   );
   formList.forEach((formElement) => {
-    formElement.addEventListener("submit", (evt) => {
-      evt.preventDefault();
-    });
     setEventListeners(
       formElement,
       validationConfig.inputSelector,
@@ -109,14 +98,12 @@ const hasInvalidInput = (inputList) => {
 const toggleButtonState = (inputList, buttonElement, inactiveButtonClass) => {
   if (hasInvalidInput(inputList)) {
     buttonElement.classList.add(inactiveButtonClass);
-    buttonElement.disabled = true;
   } else {
     buttonElement.classList.remove(inactiveButtonClass);
-    buttonElement.disabled = false;
   }
 };
 
-export const clearValidation = (formElement, validationConfig) => {
+const clearValidation = (formElement, validationConfig) => {
   const inputList = Array.from(
     formElement.querySelectorAll(validationConfig.inputSelector),
   );
@@ -134,3 +121,6 @@ export const clearValidation = (formElement, validationConfig) => {
     inputElement.setCustomValidity("");
   });
 };
+
+// exports
+export { enableValidation, clearValidation };
