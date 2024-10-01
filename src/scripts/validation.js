@@ -110,16 +110,6 @@ const clearValidation = (formElement, validationConfig) => {
   const buttonElement = formElement.querySelector(
     validationConfig.submitButtonSelector,
   );
-  buttonElement.classList.add(validationConfig.inactiveButtonClass);
-  inputList.forEach((inputElement) => {
-    hideInputError(
-      formElement,
-      inputElement,
-      validationConfig.inputErrorClass,
-      validationConfig.errorClass,
-    );
-    inputElement.setCustomValidity("");
-  });
 };
 
 // exports

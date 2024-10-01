@@ -1,5 +1,4 @@
 import "./index.css";
-import { renderCard } from "./scripts/card";
 import { closeModal, openModal, closeModalOnOverlay } from "./scripts/modal";
 import { clearValidation, enableValidation } from "./scripts/validation";
 import {
@@ -11,6 +10,13 @@ import {
   deleteLike,
   deleteCard as deleteCardFromServer,
 } from "./scripts/api";
+import {
+  createCard,
+  isCardLiked,
+  toggleLikeButton,
+  updateLikeCount,
+  deleteCardID,
+} from "./scripts/card.js";
 
 const placesList = document.querySelector(".places__list");
 const popupProfile = document.querySelector(".popup_type_edit");
@@ -28,8 +34,6 @@ const popupCaption = popupImageElement.querySelector(".popup__caption");
 const popupAvatar = document.querySelector(".popup_type_avatar");
 const popupAvatarForm = document.forms["edit-avatar"];
 const avatarEditButton = document.querySelector(".profile__image-container");
-const popupConfirm = document.querySelector(".popup_type_confirm");
-const popupConfirmButton = popupConfirm.querySelector(".popup__button");
 
 const validationConfig = {
   formSelector: ".popup__form",
@@ -41,22 +45,22 @@ const validationConfig = {
 };
 
 function likeCard(evt) {
-  const currentLikes = evt.target.parentNode.querySelector(".card__like-count");
+  const cardElement = evt.target.closest(".card");
 
-  if (evt.target.classList.contains("card__like-button_is-active")) {
-    deleteLike(evt.target.closest(".card").id)
+  if (isCardLiked(cardElement)) {
+    deleteLike(cardElement.id)
       .then((updatedCard) => {
-        evt.target.classList.remove("card__like-button_is-active");
-        currentLikes.textContent = updatedCard.likes.length;
+        toggleLikeButton(cardElement, false);
+        updateLikeCount(cardElement, updatedCard.likes.length);
       })
       .catch((err) => {
         console.log(err);
       });
   } else {
-    putLike(evt.target.closest(".card").id)
+    putLike(cardElement.id)
       .then((updatedCard) => {
-        evt.target.classList.add("card__like-button_is-active");
-        currentLikes.textContent = updatedCard.likes.length;
+        toggleLikeButton(cardElement, true);
+        updateLikeCount(cardElement, updatedCard.likes.length);
       })
       .catch((err) => {
         console.log(err);
@@ -73,23 +77,15 @@ const renderLoading = (isLoading, button) => {
 };
 
 const deleteCard = (evt) => {
-  const parent = evt.target.closest(".card");
-  openModal(popupConfirm);
-  popupConfirm.addEventListener("click", (evt) => {
-    closeModalOnOverlay(evt);
-  });
-  popupConfirmButton.addEventListener("click", (evt) => {
-    deleteCardFromServer(parent.id)
-      .then((result) => {
-        parent.remove();
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        closeModal(popupConfirm);
-      });
-  });
+  const cardElement = evt.target.closest(".card"); 
+
+  deleteCardFromServer(cardElement.id)
+    .then((result) => {
+      cardElement.remove();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 const fillProfileInfo = (userInfo) => {
@@ -128,14 +124,14 @@ function handleProfileFormSubmit(evt) {
   updateUserProfile({ name, about })
     .then((updatedProfile) => {
       fillProfileInfo(updatedProfile);
+      closeModal(popupProfile);
+      clearValidation(popupProfileForm, validationConfig);
     })
     .catch((err) => {
       console.log(err);
     })
     .finally(() => {
       renderLoading(false, popupProfileForm.querySelector(".popup__button"));
-      closeModal(popupProfile);
-      clearValidation(popupProfileForm, validationConfig);
     });
 }
 
@@ -148,6 +144,7 @@ function handleAvatarFormSubmit(evt) {
   updateUserAvatar(avatarLink)
     .then((updatedProfile) => {
       fillProfileInfo(updatedProfile);
+      closeModal(popupProfile);
     })
     .catch((err) => {
       console.log(err);
@@ -155,7 +152,6 @@ function handleAvatarFormSubmit(evt) {
     .finally(() => {
       renderLoading(false, popupAvatarForm.querySelector(".popup__button"));
       closeModal(popupAvatar);
-      clearValidation(popupAvatarForm, validationConfig);
     });
 }
 
@@ -185,10 +181,31 @@ function handleNewCardFormSubmit(evt) {
     .finally(() => {
       renderLoading(false, popupNewCardForm.querySelector(".popup__button"));
       closeModal(popupNewCard);
-      popupNewCardForm.reset();
-      clearValidation(popupNewCardForm, validationConfig);
     });
 }
+
+const renderCard = (
+  item,
+  userInfo,
+  container,
+  likeCard,
+  deleteCard,
+  openFullImageFn,
+  place = "end"
+) => {
+  const cardElement = createCard(
+    item,
+    userInfo,
+    deleteCard,
+    likeCard,
+    openFullImageFn
+  );
+  if (place === "end") {
+    container.append(cardElement);
+  } else {
+    container.prepend(cardElement);
+  }
+};
 
 const fillProfilePopup = (form, name, description) => {
   form.elements.name.value = name;
@@ -239,10 +256,12 @@ popupNewCard.addEventListener("click", (evt) => {
   closeModalOnOverlay(evt);
 });
 
-document.addEventListener("click", (evt) => {
-  if (evt.target.classList.contains("popup__close")) {
-    closeModal(evt.target.parentNode.parentNode);
-  }
+const popupCloseButtons = document.querySelectorAll(".popup__close");
+
+popupCloseButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    closeModal(button.closest(".popup"));
+  });
 });
 
 getInitialInfo()
