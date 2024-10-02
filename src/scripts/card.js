@@ -2,7 +2,7 @@ const cardTemplate = document.querySelector("#card-template").content;
 
 export const createCard = (
   card,
-  userInfo,
+  userId,
   deleteCardFn,
   likeCardFn,
   openFullImageFn
@@ -14,31 +14,31 @@ export const createCard = (
   const cardTitle = cardElement.querySelector(".card__title");
   const cardLikeCount = cardElement.querySelector(".card__like-count");
 
-  cardElement.id = card._id;
   cardImage.src = card.link;
   cardImage.alt = card.name;
   cardTitle.textContent = card.name;
   cardLikeCount.textContent = card.likes.length;
 
-  const isLiked = card.likes.some((like) => like._id === userInfo._id);
+  const isLiked = card.likes.some((like) => like._id === userId);
+
   if (isLiked) {
     cardLikeButton.classList.add("card__like-button_is-active");
   }
 
-  if (card.owner._id === userInfo._id) {
+  if (card.owner._id === userId) {
     cardDeleteButton.addEventListener("click", (evt) => {
-      deleteCardFn(evt, card._id);
+      deleteCardFn(cardElement, card._id);
     });
   } else {
     cardDeleteButton.remove();
   }
 
   cardLikeButton.addEventListener("click", (evt) => {
-    likeCardFn(evt, card._id);
+    likeCardFn(cardElement, card._id);
   });
 
   cardImage.addEventListener("click", () => {
-    openFullImageFn(cardImage.link, cardImage.name, cardTitle.name);
+    openFullImageFn(card.link, card.name, card.name);
   });
 
   return cardElement;
@@ -63,12 +63,6 @@ export function updateLikeCount(cardElement, likesAmount) {
   cardElement.querySelector(".card__like-count").textContent = likesAmount;
 }
 
-export function deleteCardID(cardElement, deleteCardFn) {
-  deleteCardFn(cardElement.id)
-    .then((result) => {
-      cardElement.remove();
-    })
-    .catch((err) => {
-      console.log(err);
-    })
-}
+export function deleteCardElement(cardElement) {
+  cardElement.remove();
+} 

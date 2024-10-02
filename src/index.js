@@ -1,6 +1,10 @@
 import "./index.css";
 import { closeModal, openModal, closeModalOnOverlay } from "./scripts/modal";
-import { clearValidation, enableValidation } from "./scripts/validation";
+import {
+  clearValidation,
+  enableValidation,
+  checkValidition,
+} from "./scripts/validation";
 import {
   getInitialInfo,
   postNewCard,
@@ -15,7 +19,7 @@ import {
   isCardLiked,
   toggleLikeButton,
   updateLikeCount,
-  deleteCardID,
+  deleteCardElement
 } from "./scripts/card.js";
 
 const placesList = document.querySelector(".places__list");
@@ -44,11 +48,14 @@ const validationConfig = {
   errorClass: "popup__error_visible",
 };
 
-function likeCard(evt) {
-  const cardElement = evt.target.closest(".card");
+// общие данные приложения
+const appData = {
+  userInfo: null,
+};
 
+function likeCard(cardElement, cardId) {
   if (isCardLiked(cardElement)) {
-    deleteLike(cardElement.id)
+    deleteLike(cardId)
       .then((updatedCard) => {
         toggleLikeButton(cardElement, false);
         updateLikeCount(cardElement, updatedCard.likes.length);
@@ -57,7 +64,7 @@ function likeCard(evt) {
         console.log(err);
       });
   } else {
-    putLike(cardElement.id)
+    putLike(cardId)
       .then((updatedCard) => {
         toggleLikeButton(cardElement, true);
         updateLikeCount(cardElement, updatedCard.likes.length);
@@ -76,12 +83,10 @@ const renderLoading = (isLoading, button) => {
   }
 };
 
-const deleteCard = (evt) => {
-  const cardElement = evt.target.closest(".card"); 
-
-  deleteCardFromServer(cardElement.id)
+const deleteCard = (cardElement, cardId) => {
+  deleteCardFromServer(cardId)
     .then((result) => {
-      cardElement.remove();
+      deleteCardElement(cardElement); 
     })
     .catch((err) => {
       console.log(err);
@@ -94,16 +99,9 @@ const fillProfileInfo = (userInfo) => {
   profileAvatar.style.backgroundImage = `url(${userInfo.avatar})`;
 };
 
-const renderInitialCards = (initialCards, userInfo) => {
+const renderInitialCards = (initialCards, userId) => {
   initialCards.forEach((card) => {
-    renderCard(
-      card,
-      userInfo,
-      placesList,
-      likeCard,
-      deleteCard,
-      openImagePopup
-    );
+    renderCard(card, userId, placesList, likeCard, deleteCard, openImagePopup);
   });
 };
 
@@ -125,7 +123,6 @@ function handleProfileFormSubmit(evt) {
     .then((updatedProfile) => {
       fillProfileInfo(updatedProfile);
       closeModal(popupProfile);
-      clearValidation(popupProfileForm, validationConfig);
     })
     .catch((err) => {
       console.log(err);
@@ -145,48 +142,53 @@ function handleAvatarFormSubmit(evt) {
     .then((updatedProfile) => {
       fillProfileInfo(updatedProfile);
       closeModal(popupProfile);
+      closeModal(popupAvatar);
     })
     .catch((err) => {
       console.log(err);
     })
     .finally(() => {
       renderLoading(false, popupAvatarForm.querySelector(".popup__button"));
-      closeModal(popupAvatar);
     });
 }
 
 function handleNewCardFormSubmit(evt) {
   evt.preventDefault();
+
+  const isFormValid = checkValidition(popupNewCardForm, validationConfig);
+  if (!isFormValid) return;
+
   renderLoading(true, popupNewCardForm.querySelector(".popup__button"));
 
   const name = popupNewCardForm.elements["place-name"].value;
   const link = popupNewCardForm.elements.link.value;
-  const userInfo = { name: profileTitle.textContent };
 
   postNewCard({ name, link })
     .then((newCard) => {
       renderCard(
         newCard,
-        userInfo,
+        appData.userInfo._id,
         placesList,
         likeCard,
         deleteCard,
         openImagePopup,
         "start"
       );
+      popupNewCardForm.reset();
+      closeModal(popupNewCard);
+      сlearValidation(popupNewCardForm, validationConfig); ///// тут где ошибка с кнопкой она после повторного поста автоматически черная
     })
     .catch((err) => {
       console.log(err);
     })
     .finally(() => {
       renderLoading(false, popupNewCardForm.querySelector(".popup__button"));
-      closeModal(popupNewCard);
     });
 }
 
 const renderCard = (
   item,
-  userInfo,
+  userId,
   container,
   likeCard,
   deleteCard,
@@ -195,7 +197,7 @@ const renderCard = (
 ) => {
   const cardElement = createCard(
     item,
-    userInfo,
+    userId,
     deleteCard,
     likeCard,
     openFullImageFn
@@ -269,7 +271,9 @@ getInitialInfo()
     const userInfo = result[0];
     const initialCards = result[1];
     fillProfileInfo(userInfo);
-    renderInitialCards(initialCards, userInfo);
+    renderInitialCards(initialCards, userInfo._id);
+
+    appData.userInfo = userInfo;
   })
   .catch((err) => {
     console.log(err);
